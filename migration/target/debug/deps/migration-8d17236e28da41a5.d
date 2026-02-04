@@ -1,0 +1,16 @@
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/deps/migration-8d17236e28da41a5.d: src/lib.rs src/m20260202_130751_initial_setup.rs src/m20260202_132826_trigger_automatic_update.rs src/m20260203_174902_add_media_to_campaigns.rs src/m20260203_201436_create_bot_observed_channels_table.rs src/m20260203_210710_add_user_details.rs src/m20260203_213822_fix_missing_updated_at.rs src/m20260203_220707_add_channel_category.rs src/m20260203_add_channel_enhancements.rs src/m20260203_add_campaigns.rs src/m20260203_enhance_deals.rs src/m20260203_add_escrow.rs
+
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/deps/libmigration-8d17236e28da41a5.rmeta: src/lib.rs src/m20260202_130751_initial_setup.rs src/m20260202_132826_trigger_automatic_update.rs src/m20260203_174902_add_media_to_campaigns.rs src/m20260203_201436_create_bot_observed_channels_table.rs src/m20260203_210710_add_user_details.rs src/m20260203_213822_fix_missing_updated_at.rs src/m20260203_220707_add_channel_category.rs src/m20260203_add_channel_enhancements.rs src/m20260203_add_campaigns.rs src/m20260203_enhance_deals.rs src/m20260203_add_escrow.rs
+
+src/lib.rs:
+src/m20260202_130751_initial_setup.rs:
+src/m20260202_132826_trigger_automatic_update.rs:
+src/m20260203_174902_add_media_to_campaigns.rs:
+src/m20260203_201436_create_bot_observed_channels_table.rs:
+src/m20260203_210710_add_user_details.rs:
+src/m20260203_213822_fix_missing_updated_at.rs:
+src/m20260203_220707_add_channel_category.rs:
+src/m20260203_add_channel_enhancements.rs:
+src/m20260203_add_campaigns.rs:
+src/m20260203_enhance_deals.rs:
+src/m20260203_add_escrow.rs:

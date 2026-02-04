@@ -1,0 +1,14 @@
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/deps/thiserror-e7f1b73b9fa62d7b.d: /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/build/thiserror-4d8e19f8842970a8/out/private.rs
+
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/deps/libthiserror-e7f1b73b9fa62d7b.rlib: /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/build/thiserror-4d8e19f8842970a8/out/private.rs
+
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/deps/libthiserror-e7f1b73b9fa62d7b.rmeta: /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/build/thiserror-4d8e19f8842970a8/out/private.rs
+
+/Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs:
+/Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs:
+/Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs:
+/Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs:
+/Users/zele/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs:
+/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/build/thiserror-4d8e19f8842970a8/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/zele/Documents/Coding/Rust/telegram-ad-mini-app/migration/target/debug/build/thiserror-4d8e19f8842970a8/out

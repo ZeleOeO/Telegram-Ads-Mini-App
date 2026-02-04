@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-L", "/usr/local/opt/postgresql@14/lib"]
