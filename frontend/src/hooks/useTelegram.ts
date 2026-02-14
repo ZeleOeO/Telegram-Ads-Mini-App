@@ -17,19 +17,15 @@ export function useTelegram() {
 
     useEffect(() => {
         if (isReady) return;
-        // 1. Try SDK First
         let data = WebApp.initData;
         const userData = WebApp.initDataUnsafe?.user;
 
-        // 2. Fallback: Parse Hash manually if SDK failed
         if (!data && window.location.hash) {
             try {
                 const hash = window.location.hash.substring(1);
                 const params = new URLSearchParams(hash);
                 if (params.has('tgWebAppData')) {
                     data = params.get('tgWebAppData') || '';
-                    // Try to parse user from the hash string if possible, 
-                    // but usually it's encoded. For MVP we just need the raw string for auth.
                     console.log('UseTelegram: using fallback hash data');
                 }
             } catch (_error) {
@@ -37,7 +33,6 @@ export function useTelegram() {
             }
         }
 
-        // Initialize
         if (WebApp) {
             WebApp.ready();
             WebApp.expand();
@@ -45,7 +40,6 @@ export function useTelegram() {
                 WebApp.setHeaderColor('#0b0e14');
                 WebApp.setBackgroundColor('#0b0e14');
             } catch (_error) {
-                // Ignore theme errors
             }
         }
 

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/telegram_ad_app
+      - RUST_LOG=info
+      # Telegram API credentials from .env
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+      # Bot Token from .env
+      - TELOXIDE_TOKEN=${TELOXIDE_TOKEN}
+      # Other secrets
+      - ESCROW_SECRET_KEY=${ESCROW_SECRET_KEY}
+      - TON_NETWORK=${TON_NETWORK:-testnet}
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=telegram_ad_app
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

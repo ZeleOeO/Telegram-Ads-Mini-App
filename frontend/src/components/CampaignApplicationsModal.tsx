@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle, Ban, Users } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import { api } from '../lib/api';
+import { DealDetailsModal } from './DealDetailsModal';
 import { useTelegram } from '../hooks/useTelegram';
-
 import type { CampaignApplication } from '../types';
 
 interface CampaignApplicationsModalProps {
@@ -12,10 +12,11 @@ interface CampaignApplicationsModalProps {
 }
 
 export function CampaignApplicationsModal({ campaignId, campaignTitle, onClose }: CampaignApplicationsModalProps) {
+    useTelegram();
     const [applications, setApplications] = useState<CampaignApplication[]>([]);
     const [loading, setLoading] = useState(true);
-    const [actioning, setActioning] = useState<number | null>(null);
-    const { tg } = useTelegram();
+    const [submitting, setSubmitting] = useState<number | null>(null);
+    const [selectedDealId, setSelectedDealId] = useState<number | null>(null);
 
     const fetchApplications = async () => {
         try {
@@ -32,21 +33,28 @@ export function CampaignApplicationsModal({ campaignId, campaignTitle, onClose }
         fetchApplications();
     }, [campaignId]);
 
-    const handleAction = async (appId: number, status: 'accepted' | 'rejected') => {
-        setActioning(appId);
+    const handleStatusUpdate = async (appId: number, status: 'accepted' | 'rejected') => {
+        setSubmitting(appId);
         try {
-            await api.post(`/campaigns/applications/${appId}/status`, { status });
-            tg?.HapticFeedback.notificationOccurred('success');
-            fetchApplications();
-        } catch (err: unknown) {
-            console.error('Action failed:', err);
-            tg?.HapticFeedback.notificationOccurred('error');
-            const error = err as any;
-            alert(error.response?.data?.error || 'Failed to update status');
+            await api.put(`/campaigns/applications/${appId}/status`, { status });
+            // Refresh applications to get the new deal_id
+            await fetchApplications();
+        } catch (e) {
+            console.error('Failed to update status', e);
+            alert('Failed to update application status');
         } finally {
-            setActioning(null);
+            setSubmitting(null);
         }
     };
+
+    if (selectedDealId) {
+        return (
+            <DealDetailsModal
+                dealId={selectedDealId}
+                onClose={() => setSelectedDealId(null)}
+            />
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -54,13 +62,13 @@ export function CampaignApplicationsModal({ campaignId, campaignTitle, onClose }
                 <div className="pb-8">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-white/40 hover:text-white"
+                        className="absolute top-4 right-4 text-muted hover:text-white"
                     >
                         <X size={20} />
                     </button>
 
-                    <h3 className="text-lg font-bold mb-1">📩 Applications</h3>
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest mb-6">{campaignTitle}</p>
+                    <h3 className="text-lg font-bold mb-1">Applications</h3>
+                    <p className="text-[10px] text-muted uppercase tracking-widest mb-6">{campaignTitle}</p>
 
                     {loading ? (
                         <div className="text-center py-20 opacity-50">Loading applications...</div>
@@ -79,42 +87,47 @@ export function CampaignApplicationsModal({ campaignId, campaignTitle, onClose }
                                             <div className="text-[10px] text-blue-400">@{app.channel_username}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-sm font-bold text-green-400">{Number(app.price_ton).toFixed(3)} TON</div>
-                                            <div className="text-[9px] text-white/40">{app.subscribers?.toLocaleString()} subs</div>
+                                            <div className="text-sm font-bold text-green-400">{Number(app.price_ton || 0).toFixed(3)} TON</div>
+                                            <div className="text-[9px] text-muted">{app.subscribers?.toLocaleString()} subs</div>
                                         </div>
                                     </div>
 
                                     {app.message && (
-                                        <div className="p-3 bg-black/40 rounded-xl border border-white/5 text-[11px] text-white/70 italic">
+                                        <div className="p-3 glass rounded-xl border border-white/5 text-[11px] text-foreground italic">
                                             "{app.message}"
                                         </div>
                                     )}
 
-                                    <div className="flex gap-2 pt-1">
-                                        {app.status === 'pending' ? (
-                                            <>
-                                                <button
-                                                    onClick={() => handleAction(app.id, 'rejected')}
-                                                    disabled={actioning !== null}
-                                                    className="flex-1 h-10 bg-white/5 hover:bg-red-500/10 hover:text-red-400 border border-white/10 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <Ban size={14} /> Reject
-                                                </button>
-                                                <button
-                                                    onClick={() => handleAction(app.id, 'accepted')}
-                                                    disabled={actioning !== null}
-                                                    className="flex-[2] h-10 bg-green-500 text-black rounded-xl text-[10px] font-bold hover:bg-green-400 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <CheckCircle size={14} /> {actioning === app.id ? 'Accepting...' : 'Accept & Start Deal'}
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <div className={`w-full py-2 rounded-xl text-[10px] font-bold text-center border ${app.status === 'accepted' ? 'text-green-400 bg-green-400/10 border-green-400/20' : 'text-red-400 bg-red-400/10 border-red-500/20'
-                                                }`}>
-                                                {app.status.toUpperCase()}
-                                            </div>
-                                        )}
-                                    </div>
+                                    {app.status === 'pending' ? (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleStatusUpdate(app.id, 'accepted')}
+                                                disabled={submitting === app.id}
+                                                className="flex-1 py-2 bg-green-500/10 text-green-400 rounded-xl font-bold text-xs hover:bg-green-500/20 disabled:opacity-50"
+                                            >
+                                                {submitting === app.id ? 'Creating Deal...' : 'Accept & Create Deal'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusUpdate(app.id, 'rejected')}
+                                                disabled={submitting === app.id}
+                                                className="px-3 py-2 bg-red-500/10 text-red-400 rounded-xl font-bold text-xs hover:bg-red-500/20 disabled:opacity-50"
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    ) : app.deal_id ? (
+                                        <button
+                                            onClick={() => setSelectedDealId(app.deal_id!)}
+                                            className="w-full py-2 bg-blue-500/10 text-blue-400 rounded-xl font-bold text-xs hover:bg-blue-500/20 flex items-center justify-center gap-2"
+                                        >
+                                            <Users size={14} /> View Deal #{app.deal_id}
+                                        </button>
+                                    ) : (
+                                        <div className={`w-full py-2 rounded-xl text-[10px] font-bold text-center border ${app.status === 'accepted' ? 'text-green-400 bg-green-400/10 border-green-400/20' : app.status === 'rejected' ? 'text-red-400 bg-red-400/10 border-red-500/20' : 'text-sky-400 bg-sky-400/10 border-sky-400/20'
+                                            }`}>
+                                            {app.status.toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

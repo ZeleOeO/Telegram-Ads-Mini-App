@@ -67,7 +67,7 @@ export function ApplyCampaignModal({ campaignId, campaignTitle, onClose }: Apply
                         <X size={20} />
                     </button>
 
-                    <h3 className="text-lg font-bold mb-2">🚀 Apply to Campaign</h3>
+                    <h3 className="text-lg font-bold mb-2">Apply to Campaign</h3>
                     <p className="text-xs text-white/40 mb-6">{campaignTitle}</p>
 
                     {loading ? (

@@ -9,9 +9,26 @@
   line-height: 1.5;
   font-weight: 400;
 
+  --tg-theme-bg-color: #0b0e14 !important;
+  --tg-theme-secondary-bg-color: #151a23 !important;
+  --tg-theme-text-color: rgba(255, 255, 255, 0.87) !important;
+  --tg-theme-hint-color: rgba(255, 255, 255, 0.5) !important;
+  --tg-theme-link-color: #3b82f6;
+  --tg-theme-button-color: #3b82f6;
+  --tg-theme-button-text-color: #ffffff;
+
+  --background: var(--tg-theme-secondary-bg-color);
+  --background-secondary: var(--tg-theme-bg-color);
+  --foreground: var(--tg-theme-text-color);
+  --foreground-muted: var(--tg-theme-hint-color);
+  --card-bg: var(--tg-theme-bg-color);
+  --card-border: rgba(128, 128, 128, 0.15) !important;
+  --accent: var(--tg-theme-button-color);
+  --accent-text: var(--tg-theme-button-text-color);
+
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0b0e14;
+  color: var(--foreground);
+  background-color: var(--background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -25,7 +42,9 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0b0e14;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -33,13 +52,14 @@ body {
   margin: 0 auto;
   text-align: center;
   width: 100%;
+  background-color: var(--background);
 }
 
 .glass {
-  background: rgba(21, 26, 35, 0.85);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
 }
 
 .glass-card {
@@ -48,11 +68,81 @@ body {
 
 .glass-card:active {
   transform: scale(0.98);
-  background: rgba(21, 26, 35, 0.95);
 }
 
-/* Scrollbar hiding */
+.text-foreground {
+  color: var(--tg-theme-text-color);
+}
+
+.text-muted {
+  color: var(--tg-theme-hint-color);
+}
+
+.text-link {
+  color: var(--tg-theme-link-color);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-background-secondary {
+  background-color: var(--background-secondary);
+}
+
+.bg-card {
+  background-color: var(--card-bg);
+}
+
+svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+svg[class*="lucide"] {
+  fill: none;
+  stroke: currentColor;
+}
+
 ::-webkit-scrollbar {
   width: 0px;
   background: transparent;
+}
+
+.deal-card {
+  background-color: var(--tg-theme-bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+.deal-card:hover {
+  border-color: var(--tg-theme-button-color);
+  transform: translateY(-1px);
+}
+
+.input-field {
+  background-color: var(--tg-theme-secondary-bg-color);
+  border: 1px solid var(--card-border);
+  color: var(--tg-theme-text-color);
+}
+
+.input-field::placeholder {
+  color: var(--tg-theme-hint-color);
+}
+
+.input-field:focus {
+  border-color: var(--tg-theme-button-color);
+  outline: none;
+}
+
+select {
+  background-color: var(--tg-theme-secondary-bg-color);
+  color: var(--tg-theme-text-color);
+  border: 1px solid var(--card-border);
+}
+
+select option {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
 }

@@ -10,7 +10,6 @@ interface PricingModalProps {
 
 export function PricingModal({ channelId, onClose, onSuccess }: PricingModalProps) {
     const [format, setFormat] = useState('Post');
-    const [duration, setDuration] = useState('48h');
     const [price, setPrice] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -19,9 +18,9 @@ export function PricingModal({ channelId, onClose, onSuccess }: PricingModalProp
         setSubmitting(true);
         try {
             await api.post(`/channels/${channelId}/ad-formats`, {
-                format_name: `${format} (${duration})`,
+                format_name: format,
                 price_ton: parseFloat(price),
-                description: `Standard ${format.toLowerCase()} kept for ${duration}`,
+                description: `Standard ${format.toLowerCase()} ad placement`,
             });
             onSuccess();
             onClose();
@@ -38,20 +37,20 @@ export function PricingModal({ channelId, onClose, onSuccess }: PricingModalProp
                 <div className="pb-20">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-white/40 hover:text-white"
+                        className="absolute top-4 right-4 text-muted hover:text-white"
                     >
                         <X size={20} />
                     </button>
 
-                    <h3 className="text-lg font-bold mb-4">💰 Set Ad Pricing</h3>
+                    <h3 className="text-lg font-bold mb-4">Set Ad Pricing</h3>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs text-white/60 ml-1">Format Type</label>
+                            <label className="text-xs text-muted ml-1">Format Type</label>
                             <select
                                 value={format}
                                 onChange={e => setFormat(e.target.value)}
-                                className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm appearance-none focus:outline-none"
+                                className="w-full h-10 px-3 glass rounded-xl text-sm appearance-none focus:outline-none"
                             >
                                 <option value="Post">Standard Post</option>
                                 <option value="Repost">Repost / Forward</option>
@@ -60,31 +59,21 @@ export function PricingModal({ channelId, onClose, onSuccess }: PricingModalProp
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs text-white/60 ml-1">Duration</label>
-                            <select
-                                value={duration}
-                                onChange={e => setDuration(e.target.value)}
-                                className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm appearance-none focus:outline-none"
-                            >
-                                <option value="24h">24 Hours</option>
-                                <option value="48h">48 Hours</option>
-                                <option value="72h">3 Days</option>
-                                <option value="Permanent">Permanent</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <label className="text-xs text-white/60 ml-1">Price (TON)</label>
+                            <label className="text-xs text-muted ml-1">Price (TON)</label>
                             <input
                                 type="number"
                                 step="0.1"
                                 value={price}
                                 onChange={e => setPrice(e.target.value)}
                                 placeholder="50.0"
-                                className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50"
+                                className="w-full h-10 px-3 glass rounded-xl text-sm focus:outline-none focus:border-blue-500/50"
                                 required
                             />
                         </div>
+
+                        <p className="text-[10px] text-muted text-center">
+                            All ads are permanent placements
+                        </p>
 
                         <button
                             type="submit"
@@ -99,3 +88,4 @@ export function PricingModal({ channelId, onClose, onSuccess }: PricingModalProp
         </div>
     );
 }
+

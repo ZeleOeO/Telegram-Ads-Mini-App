@@ -19,8 +19,6 @@ export function ChannelDetailsModal({ channelId, onClose, onStartDeal }: Channel
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                // Fetch basic channels list to find this specific one (backend doesn't have a single channel detail yet, or use /channels?id=x if supported)
-                // For now, let's assume we can fetch formats at least
                 const [formatsRes, channelsRes] = await Promise.all([
                     api.get(`/channels/${channelId}/ad-formats`),
                     api.get('/channels')
@@ -64,7 +62,7 @@ export function ChannelDetailsModal({ channelId, onClose, onStartDeal }: Channel
                 <div className="h-24 bg-gradient-to-r from-blue-600/20 to-purple-600/20 relative">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full text-white/70 hover:text-white transition-colors"
+                        className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center glass backdrop-blur-md rounded-full text-foreground hover:text-white transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -91,34 +89,40 @@ export function ChannelDetailsModal({ channelId, onClose, onStartDeal }: Channel
                         <div className="p-3 bg-white/5 rounded-2xl border border-white/5 text-center">
                             <Users size={16} className="mx-auto mb-1 text-blue-400 opacity-60" />
                             <div className="text-sm font-bold">{(channel.subscribers || 0).toLocaleString()}</div>
-                            <div className="text-[10px] text-white/40 uppercase">Subs</div>
+                            <div className="text-[10px] text-muted uppercase">Subs</div>
                         </div>
                         <div className="p-3 bg-white/5 rounded-2xl border border-white/5 text-center">
                             <Flame size={16} className="mx-auto mb-1 text-orange-400 opacity-60" />
-                            <div className="text-sm font-bold">{channel.reach || '0'}k</div>
-                            <div className="text-[10px] text-white/40 uppercase">Avg View</div>
+                            <div className="text-sm font-bold">
+                                {channel.reach
+                                    ? (channel.reach < 1000
+                                        ? channel.reach
+                                        : (channel.reach / 1000).toFixed(1) + 'k')
+                                    : '0'}
+                            </div>
+                            <div className="text-[10px] text-muted uppercase">Avg Views</div>
                         </div>
                         <div className="p-3 bg-white/5 rounded-2xl border border-white/5 text-center">
                             <Globe size={16} className="mx-auto mb-1 text-purple-400 opacity-60" />
                             <div className="text-sm font-bold">{channel.language || 'Global'}</div>
-                            <div className="text-[10px] text-white/40 uppercase">Lang</div>
+                            <div className="text-[10px] text-muted uppercase">Lang</div>
                         </div>
                     </div>
 
                     {/* About Section */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-white/60 uppercase tracking-wider">Analytics & Reach</h4>
+                        <h4 className="text-xs font-bold text-muted uppercase tracking-wider">Analytics</h4>
                         <div className="space-y-4">
                             {/* Premium Bar */}
                             <div className="space-y-1.5">
                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
-                                    <span className="text-white/40">Telegram Premium Users</span>
-                                    <span className="text-blue-400">{channel.premium_percentage || 12}%</span>
+                                    <span className="text-muted">Telegram Premium Users</span>
+                                    <span className="text-blue-400">{channel.premium_percentage || 0}%</span>
                                 </div>
                                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
                                     <div
                                         className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full"
-                                        style={{ width: `${channel.premium_percentage || 12}%` }}
+                                        style={{ width: `${channel.premium_percentage || 0}%` }}
                                     />
                                 </div>
                             </div>
@@ -129,22 +133,54 @@ export function ChannelDetailsModal({ channelId, onClose, onStartDeal }: Channel
                                     <Globe size={14} className="text-purple-400" />
                                     <span className="text-xs font-bold">Primary Language</span>
                                 </div>
-                                <span className="text-xs text-white/60 font-mono bg-white/5 px-2 py-1 rounded border border-white/10">
+                                <span className="text-xs text-muted font-mono bg-white/5 px-2 py-1 rounded border border-white/10">
                                     {channel.language || 'English'}
                                 </span>
                             </div>
 
-                            <p className="text-sm text-white/70 leading-relaxed">
+                            <p className="text-sm text-foreground leading-relaxed">
                                 {channel.description || "No description provided. This channel is available for advertisements with high engagement rates."}
                             </p>
+
+                            {/* Engagement Metrics */}
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                                    <div className="text-[10px] text-muted uppercase font-bold tracking-wider">Virality</div>
+                                    <div className="flex items-end gap-1.5">
+                                        <div className="text-lg font-bold">{(channel.shares_per_post || 0).toFixed(1)}</div>
+                                        <div className="text-[10px] text-muted pb-1">shares/post</div>
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                                    <div className="text-[10px] text-muted uppercase font-bold tracking-wider">Engagement</div>
+                                    <div className="flex items-end gap-1.5">
+                                        <div className="text-lg font-bold">{(channel.reactions_per_post || 0).toFixed(1)}</div>
+                                        <div className="text-[10px] text-muted pb-1">reac./post</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-blue-500/5 rounded-xl border border-blue-500/10 space-y-2">
+                                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tight">
+                                    <span className="text-blue-400 opacity-60">Push Notification Reach</span>
+                                    <span className="text-blue-400">{(channel.enabled_notifications || 0).toFixed(1)}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-blue-500/10 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-blue-500 rounded-full transition-all duration-1000"
+                                        style={{ width: `${channel.enabled_notifications || 0}%` }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-blue-400/50 italic text-center">Percentage of followers with notifications enabled</p>
+                            </div>
                         </div>
                     </div>
 
                     {/* Pricing Section */}
                     <div className="space-y-3">
-                        <h4 className="text-xs font-bold text-white/60 uppercase tracking-wider">Ad Formats & Pricing</h4>
+                        <h4 className="text-xs font-bold text-muted uppercase tracking-wider">Ad Formats & Pricing</h4>
                         {formats.length === 0 ? (
-                            <div className="p-4 bg-white/5 rounded-xl border border-dashed border-white/10 text-center text-xs text-white/40 italic">
+                            <div className="p-4 bg-white/5 rounded-xl border border-dashed border-white/10 text-center text-xs text-muted italic">
                                 No pricing set yet. Contact owner for custom offer.
                             </div>
                         ) : (
@@ -154,11 +190,11 @@ export function ChannelDetailsModal({ channelId, onClose, onStartDeal }: Channel
                                         <div className="space-y-1">
                                             <div className="font-bold flex items-center gap-2">
                                                 {f.format_name}
-                                                <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] rounded border border-blue-500/20">
-                                                    {f.duration || '24h'}
+                                                <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20">
+                                                    Permanent
                                                 </span>
                                             </div>
-                                            <div className="text-[10px] text-white/40">{f.format_description || 'Standard placement'}</div>
+                                            <div className="text-[10px] text-muted">{f.format_description || 'Standard placement'}</div>
                                         </div>
                                         <button
                                             onClick={() => handleStartDeal(f.id)}

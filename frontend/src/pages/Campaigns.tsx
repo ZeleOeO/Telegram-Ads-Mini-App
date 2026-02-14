@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Image as ImageIcon, Trash2, Users } from 'lucide-react';
+import { Plus, X, Image as ImageIcon, Trash2, Users, Tag } from 'lucide-react';
 import { api } from '../lib/api';
 import { useTelegram } from '../hooks/useTelegram';
 import { CampaignApplicationsModal } from '../components/CampaignApplicationsModal';
@@ -11,13 +11,15 @@ export function Campaigns() {
     const [showModal, setShowModal] = useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
     const [selectedCampaignTitle, setSelectedCampaignTitle] = useState('');
+    const [editingCampaignId, setEditingCampaignId] = useState<number | null>(null);
 
-    // Form State
     const [title, setTitle] = useState('');
     const [brief, setBrief] = useState('');
     const [budget, setBudget] = useState('');
     const [minSubs, setMinSubs] = useState('');
     const [mediaUrls, setMediaUrls] = useState<string[]>(['']);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [newCategory, setNewCategory] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const { tg } = useTelegram();
@@ -38,33 +40,74 @@ export function Campaigns() {
         }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleCreateOrUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
         try {
             const validUrls = mediaUrls.filter((u: string) => u.trim().length > 0);
-            await api.post('/campaigns', {
+            const payload = {
                 title,
                 brief,
-                budget_ton: parseFloat(budget),
-                target_subscribers_min: minSubs ? parseInt(minSubs) : null,
-                media_urls: validUrls.length > 0 ? validUrls : null
-            });
+                media_urls: validUrls.length > 0 ? validUrls : null,
+                categories: categories.length > 0 ? categories : null
+            };
+
+            if (editingCampaignId) {
+                await api.put(`/campaigns/${editingCampaignId}`, payload);
+            } else {
+                await api.post('/campaigns', payload);
+            }
+
             tg?.HapticFeedback.notificationOccurred('success');
             setShowModal(false);
+            setEditingCampaignId(null);
             loadMyCampaigns();
-            // Reset form
-            setTitle('');
-            setBrief('');
-            setBudget('');
-            setMinSubs('');
-            setMediaUrls(['']);
+            resetForm();
         } catch (err: unknown) {
             tg?.HapticFeedback.notificationOccurred('error');
             const e = err as BackendError;
-            alert(e.response?.data?.error || 'Failed to create campaign');
+            alert(e.response?.data?.error || 'Failed to save campaign');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const resetForm = () => {
+        setTitle('');
+        setBrief('');
+        setBudget('');
+        setMinSubs('');
+        setMediaUrls(['']);
+        setCategories([]);
+        setNewCategory('');
+        setEditingCampaignId(null);
+    };
+
+    const handleEdit = (c: Campaign) => {
+        setEditingCampaignId(c.id);
+        setTitle(c.title);
+        setBrief(c.brief);
+        setBudget(c.budget_ton.toString());
+        setMinSubs(c.target_subscribers_min?.toString() || '');
+        let urls = [''];
+        if (Array.isArray(c.media_urls)) {
+            urls = c.media_urls;
+        } else if (typeof c.media_urls === 'string') {
+            urls = (c.media_urls as string).split(',');
+        }
+        setMediaUrls(urls.length > 0 ? urls : ['']);
+        setCategories(c.categories || []);
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Delete this campaign?')) return;
+        try {
+            await api.delete(`/campaigns/${id}`);
+            tg?.HapticFeedback.notificationOccurred('success');
+            loadMyCampaigns();
+        } catch (e) {
+            alert('Failed to delete campaign');
         }
     };
 
@@ -79,6 +122,21 @@ export function Campaigns() {
         if (mediaUrls.length > 1) {
             setMediaUrls(mediaUrls.filter((_: string, i: number) => i !== index));
         }
+    };
+
+    const addCategory = () => {
+        if (!newCategory.trim()) return;
+        if (categories.length >= 3) {
+            alert('Maximum 3 categories allowed');
+            return;
+        }
+        if (categories.includes(newCategory.trim())) return;
+        setCategories([...categories, newCategory.trim()]);
+        setNewCategory('');
+    };
+
+    const removeCategory = (cat: string) => {
+        setCategories(categories.filter(c => c !== cat));
     };
 
     return (
@@ -112,7 +170,6 @@ export function Campaigns() {
                                 {c.brief}
                             </p>
 
-                            {/* Media Preview */}
                             {c.media_urls && (
                                 <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
                                     {(c.media_urls as unknown as string).split(',').slice(0, 3).map((url, i) => (
@@ -131,9 +188,20 @@ export function Campaigns() {
                                 >
                                     <Users size={14} className="text-blue-400" /> View Applications
                                 </button>
-                                <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-400 rounded text-[10px] uppercase font-bold tracking-wider">
-                                    Active
-                                </span>
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                                <button
+                                    onClick={() => handleEdit(c)}
+                                    className="p-1.5 bg-white/5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white"
+                                >
+                                    <Megaphone size={14} />
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(c.id)}
+                                    className="p-1.5 bg-red-500/10 rounded-lg hover:bg-red-500/20 text-red-400"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -147,117 +215,163 @@ export function Campaigns() {
                             </button>
                         </div>
                     )}
-                </div>
-            )}
 
-            {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full sm:max-w-md glass rounded-t-2xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-                        <div className="pb-20">
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="absolute top-4 right-4 text-white/40 hover:text-white"
-                            >
-                                <X size={20} />
-                            </button>
+                    {showModal && (
+                        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="w-full sm:max-w-md glass rounded-t-2xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+                                <div className="pb-20">
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        className="absolute top-4 right-4 text-white/40 hover:text-white"
+                                    >
+                                        <X size={20} />
+                                    </button>
 
-                            <h3 className="text-lg font-bold mb-6">📣 Create Campaign</h3>
+                                    <h3 className="text-lg font-bold mb-6">{editingCampaignId ? 'Edit Campaign' : 'Create Campaign'}</h3>
 
-                            <form onSubmit={handleCreate} className="space-y-4">
-                                <input
-                                    type="text"
-                                    value={title}
-                                    onChange={e => setTitle(e.target.value)}
-                                    placeholder="Campaign Title"
-                                    className="w-full h-12 px-4 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50"
-                                    required
-                                />
-
-                                <textarea
-                                    value={brief}
-                                    onChange={e => setBrief(e.target.value)}
-                                    placeholder="Place ad here..."
-                                    className="w-full h-24 px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50 resize-none"
-                                    required
-                                />
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase text-white/40 ml-1">Budget (TON)</label>
+                                    <form onSubmit={handleCreateOrUpdate} className="space-y-4">
                                         <input
-                                            type="number"
-                                            step="0.1"
-                                            value={budget}
-                                            onChange={e => setBudget(e.target.value)}
-                                            placeholder="100"
-                                            className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm"
+                                            type="text"
+                                            value={title}
+                                            onChange={e => setTitle(e.target.value)}
+                                            placeholder="Campaign Title"
+                                            className="w-full h-12 px-4 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50"
                                             required
                                         />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase text-white/40 ml-1">Min Subs</label>
-                                        <input
-                                            type="number"
-                                            value={minSubs}
-                                            onChange={e => setMinSubs(e.target.value)}
-                                            placeholder="1000"
-                                            className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm"
-                                        />
-                                    </div>
-                                </div>
 
-                                <div className="space-y-2 pt-2">
-                                    <label className="text-xs text-white/60 ml-1 flex items-center gap-2">
-                                        <ImageIcon size={14} /> Creative Assets (URLs)
-                                    </label>
-                                    {mediaUrls.map((url: string, idx: number) => (
-                                        <div key={idx} className="flex gap-2">
-                                            <input
-                                                type="url"
-                                                value={url}
-                                                onChange={e => updateMediaUrl(idx, e.target.value)}
-                                                placeholder="https://imgur.com/..."
-                                                className="flex-1 h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-mono"
-                                            />
-                                            {mediaUrls.length > 1 && (
+                                        <textarea
+                                            value={brief}
+                                            onChange={e => setBrief(e.target.value)}
+                                            placeholder="Place ad here..."
+                                            className="w-full h-24 px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50 resize-none"
+                                            required
+                                        />
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] uppercase text-white/40 ml-1">Budget (TON)</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.1"
+                                                    value={budget}
+                                                    onChange={e => setBudget(e.target.value)}
+                                                    placeholder="100"
+                                                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] uppercase text-white/40 ml-1">Min Subs</label>
+                                                <input
+                                                    type="number"
+                                                    value={minSubs}
+                                                    onChange={e => setMinSubs(e.target.value)}
+                                                    placeholder="1000"
+                                                    className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs text-white/60 ml-1 flex items-center gap-2">
+                                                <Tag size={14} /> Categories (Max 3)
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={newCategory}
+                                                    onChange={e => setNewCategory(e.target.value)}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            addCategory();
+                                                        }
+                                                    }}
+                                                    placeholder="Add category (e.g. Tech, Crypto)"
+                                                    className="flex-1 h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm"
+                                                    disabled={categories.length >= 3}
+                                                />
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeMediaField(idx)}
-                                                    className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"
+                                                    onClick={addCategory}
+                                                    disabled={categories.length >= 3 || !newCategory.trim()}
+                                                    className="px-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-xs disabled:opacity-50"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    Add
                                                 </button>
+                                            </div>
+                                            {categories.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {categories.map(cat => (
+                                                        <span key={cat} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg text-xs font-bold flex items-center gap-2">
+                                                            {cat}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeCategory(cat)}
+                                                                className="hover:text-white"
+                                                            >
+                                                                <X size={12} />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={addMediaField}
-                                        className="text-xs text-blue-400 hover:text-blue-300 ml-1"
-                                    >
-                                        + Add another URL
-                                    </button>
+
+                                        <div className="space-y-2 pt-2">
+                                            <label className="text-xs text-white/60 ml-1 flex items-center gap-2">
+                                                <ImageIcon size={14} /> Creative Assets (URLs)
+                                            </label>
+                                            {mediaUrls.map((url: string, idx: number) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input
+                                                        type="url"
+                                                        value={url}
+                                                        onChange={e => updateMediaUrl(idx, e.target.value)}
+                                                        placeholder="https://imgur.com/..."
+                                                        className="flex-1 h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-mono"
+                                                    />
+                                                    {mediaUrls.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeMediaField(idx)}
+                                                            className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={addMediaField}
+                                                className="text-xs text-blue-400 hover:text-blue-300 ml-1"
+                                            >
+                                                + Add another URL
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="w-full h-12 mt-2 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold active:scale-95 transition-all disabled:opacity-50"
+                                        >
+                                            {submitting ? 'Saving...' : (editingCampaignId ? 'Update Campaign' : 'Launch Campaign')}
+                                        </button>
+                                    </form>
                                 </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="w-full h-12 mt-2 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    {submitting ? 'Creating...' : 'Launch Campaign'}
-                                </button>
-                            </form>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    )}
 
-            {selectedCampaignId && (
-                <CampaignApplicationsModal
-                    campaignId={selectedCampaignId}
-                    campaignTitle={selectedCampaignTitle}
-                    onClose={() => setSelectedCampaignId(null)}
-                />
+                    {selectedCampaignId && (
+                        <CampaignApplicationsModal
+                            campaignId={selectedCampaignId}
+                            campaignTitle={selectedCampaignTitle}
+                            onClose={() => setSelectedCampaignId(null)}
+                        />
+                    )}
+                </div>
             )}
         </div>
     );

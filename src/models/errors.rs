@@ -2,11 +2,8 @@ use axum::{Json, http::StatusCode, response::IntoResponse};
 use sea_orm::DbErr;
 use serde_json::json;
 use thiserror::Error;
-
 pub type ApiResult<T> = Result<T, ApiError>;
-
 pub type BotResult<T> = Result<T, BotError>;
-
 #[derive(Debug)]
 pub enum ApiError {
     DbErr(DbErr),
@@ -17,7 +14,6 @@ pub enum ApiError {
     BadRequest(String),
     Internal(String),
 }
-
 #[derive(Debug, Error)]
 pub enum BotError {
     #[error("Database error: {0}")]
@@ -25,19 +21,21 @@ pub enum BotError {
     #[error("Telegram request error: {0}")]
     Telegram(#[from] teloxide::RequestError),
 }
-
 impl From<DbErr> for ApiError {
     fn from(err: DbErr) -> Self {
         ApiError::DbErr(err)
     }
 }
-
 impl From<teloxide::RequestError> for ApiError {
     fn from(err: teloxide::RequestError) -> Self {
         ApiError::TelegramErr(err)
     }
 }
-
+impl From<ton::errors::TonError> for ApiError {
+    fn from(err: ton::errors::TonError) -> Self {
+        ApiError::Internal(format!("TON Error: {}", err))
+    }
+}
 impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
@@ -67,7 +65,6 @@ impl IntoResponse for ApiError {
                 )
             }
         };
-
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
     }

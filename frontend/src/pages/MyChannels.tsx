@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Settings, CheckCircle2 } from 'lucide-react';
+import { Plus, X, Settings, CheckCircle2, RefreshCw } from 'lucide-react';
 import { api } from '../lib/api';
 import type { Channel } from '../types';
 import { formatNumber } from '../lib/utils';
@@ -12,12 +12,13 @@ export function MyChannels() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [username, setUsername] = useState('');
+    const [category, setCategory] = useState('Crypto');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [suggestions, setSuggestions] = useState<ChannelSuggestion[]>([]);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+    const [refreshing, setRefreshing] = useState<number | null>(null);
 
-    // Channel Settings Modal State
     const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
 
     const { tg, user } = useTelegram();
@@ -63,10 +64,11 @@ export function MyChannels() {
 
         setSubmitting(true);
         try {
-            await api.post('/channels', { username: targetUsername });
+            await api.post('/channels', { username: targetUsername, category });
             tg?.HapticFeedback.notificationOccurred('success');
             setShowModal(false);
             setUsername('');
+            setCategory('Crypto');
             loadMyChannels();
         } catch (err: unknown) {
             tg?.HapticFeedback.notificationOccurred('error');
@@ -74,6 +76,21 @@ export function MyChannels() {
             alert(e.response?.data?.error || 'Failed to add channel. Ensure bot is admin!');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleRefreshStats = async (channelId: number) => {
+        setRefreshing(channelId);
+        try {
+            await api.post(`/channels/${channelId}/refresh-stats`);
+            tg?.HapticFeedback.notificationOccurred('success');
+            loadMyChannels();
+        } catch (err) {
+            console.error(err);
+            tg?.HapticFeedback.notificationOccurred('error');
+            tg?.showAlert('Failed to refresh stats');
+        } finally {
+            setRefreshing(null);
         }
     };
 
@@ -111,12 +128,22 @@ export function MyChannels() {
                             <span>{formatNumber(channel.subscribers)} subs</span>
                             <span>{formatNumber(channel.reach || 0)} reach</span>
                         </div>
-                        <button
-                            onClick={() => setSelectedChannel(channel)}
-                            className="w-full py-2 bg-white/5 rounded-lg text-xs font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <Settings size={14} /> Channel Settings
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleRefreshStats(channel.id)}
+                                disabled={refreshing === channel.id}
+                                className="flex-1 py-2 bg-white/5 rounded-lg text-xs font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <RefreshCw size={14} className={refreshing === channel.id ? "animate-spin" : ""} />
+                                {refreshing === channel.id ? "Refreshing" : "Refresh"}
+                            </button>
+                            <button
+                                onClick={() => setSelectedChannel(channel)}
+                                className="flex-1 py-2 bg-white/5 rounded-lg text-xs font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Settings size={14} /> Settings
+                            </button>
+                        </div>
                     </div>
                 ))}
 
@@ -130,7 +157,6 @@ export function MyChannels() {
                 )}
             </div>
 
-            {/* Add Channel Modal */}
             {showModal && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="w-full sm:max-w-sm glass rounded-t-2xl sm:rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto font-sans">
@@ -142,7 +168,7 @@ export function MyChannels() {
                                 <X size={20} />
                             </button>
 
-                            <h3 className="text-lg font-bold mb-4">📢 Add Channel</h3>
+                            <h3 className="text-lg font-bold mb-4">Add Channel</h3>
 
                             <div className="space-y-4">
                                 {loadingSuggestions ? (
@@ -186,6 +212,20 @@ export function MyChannels() {
 
                                 <form onSubmit={handleAddChannel} className="space-y-4">
                                     <div className="space-y-1.5">
+                                        <label className="text-xs text-white/60 ml-1">Channel Category</label>
+                                        <select
+                                            value={category}
+                                            onChange={e => setCategory(e.target.value)}
+                                            className="w-full h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50 appearance-none"
+                                            style={{ color: 'var(--tg-theme-text-color)' }}
+                                        >
+                                            {['Crypto', 'Tech', 'Business', 'Lifestyle', 'Entertainment', 'News', 'Other'].map(c => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
                                         <label className="text-xs text-white/60 ml-1">Channel Username / Link</label>
                                         <input
                                             type="text"
@@ -211,7 +251,6 @@ export function MyChannels() {
                 </div>
             )}
 
-            {/* Channel Settings Modal */}
             {selectedChannel && (
                 <ChannelSettingsModal
                     channel={selectedChannel}

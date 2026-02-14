@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-
 #[derive(Deserialize)]
 pub struct CreateCampaignRequest {
     pub title: String,
@@ -9,8 +8,19 @@ pub struct CreateCampaignRequest {
     pub target_subscribers_max: Option<i64>,
     pub target_languages: Option<Vec<String>>,
     pub media_urls: Option<Vec<String>>,
+    pub categories: Option<Vec<String>>,
 }
-
+#[derive(Deserialize)]
+pub struct UpdateCampaignRequest {
+    pub title: Option<String>,
+    pub brief: Option<String>,
+    pub budget_ton: Option<f64>,
+    pub target_subscribers_min: Option<i64>,
+    pub target_subscribers_max: Option<i64>,
+    pub target_languages: Option<Vec<String>>,
+    pub media_urls: Option<Vec<String>>,
+    pub categories: Option<Vec<String>>,
+}
 #[derive(Serialize)]
 pub struct CampaignResponse {
     pub id: i32,
@@ -23,15 +33,14 @@ pub struct CampaignResponse {
     pub target_languages: Option<String>,
     pub status: String,
     pub media_urls: Option<Vec<String>>,
+    pub categories: Option<Vec<String>>,
     pub created_at: String,
 }
-
 #[derive(Deserialize)]
 pub struct ApplyToCampaignRequest {
     pub proposed_price_ton: f64,
     pub message: Option<String>,
 }
-
 #[derive(Serialize)]
 pub struct CampaignApplicationResponse {
     pub id: i32,

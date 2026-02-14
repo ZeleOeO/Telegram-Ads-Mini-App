@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
-
 #[derive(Deserialize)]
 pub struct AddChannelPayload {
     pub username: String,
+    pub category: Option<String>,
 }
-
 #[derive(Deserialize)]
 pub struct UpdateChannelRequest {
     pub title: Option<String>,
@@ -14,14 +13,12 @@ pub struct UpdateChannelRequest {
     pub premium_percentage: Option<f32>,
     pub category: Option<String>,
 }
-
 #[derive(Deserialize)]
 pub struct AddAdFormatRequest {
     pub format_name: String,
     pub format_description: Option<String>,
     pub price_ton: f64,
 }
-
 #[derive(Serialize)]
 pub struct AdFormatResponse {
     pub id: i32,
@@ -29,7 +26,6 @@ pub struct AdFormatResponse {
     pub format_description: Option<String>,
     pub price_ton: String,
 }
-
 #[derive(Serialize)]
 pub struct ChannelResponse {
     pub id: i32,
@@ -45,7 +41,6 @@ pub struct ChannelResponse {
     pub status: Option<String>,
     pub ad_formats: Vec<AdFormatResponse>,
 }
-
 #[derive(Deserialize)]
 pub struct ChannelFilterParams {
     pub min_subscribers: Option<i64>,
@@ -56,8 +51,8 @@ pub struct ChannelFilterParams {
     pub min_reach: Option<i64>,
     pub format_name: Option<String>,
     pub category: Option<String>,
+    pub sort: Option<String>,
 }
-
 #[derive(Deserialize)]
 pub struct AddPrManagerRequest {
     pub username_or_id: String,

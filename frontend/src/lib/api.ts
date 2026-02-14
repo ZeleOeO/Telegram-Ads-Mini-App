@@ -6,6 +6,7 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true',
     },
 });
 
@@ -20,11 +21,9 @@ export const setAuthToken = (token: string) => {
     }
 };
 
-// Response interceptor for generic error handling
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // You could handle global errors here (like 401 logging out)
         return Promise.reject(error);
     }
 );

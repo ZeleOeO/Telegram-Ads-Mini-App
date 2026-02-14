@@ -1,67 +1,129 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Telescope, Megaphone, Radio } from 'lucide-react';
+import { Telescope, TrendingUp, PieChart, Wallet } from 'lucide-react';
 import { useTelegram } from '../hooks/useTelegram';
+import { api } from '../lib/api';
+import { AnalyticsCard } from '../components/AnalyticsCard';
+import { RecentCampaignsList } from '../components/RecentCampaignsList';
+import type { Deal, Channel } from '../types';
 
 export function Home() {
     const navigate = useNavigate();
-    const { user } = useTelegram();
+    useTelegram();
+    const [stats, setStats] = useState({
+        totalViews: 0,
+        activeDeals: 0,
+        earnings: 0,
+        balance: '0'
+    });
+    const [recentDeals, setRecentDeals] = useState<Deal[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [dealsRes, channelsRes, meRes] = await Promise.all([
+                    api.get('/deals/my'),
+                    api.get('/channels/my'),
+                    api.get('/me')
+                ]);
+
+                const deals = dealsRes.data as Deal[];
+                const channels = channelsRes.data as Channel[];
+                const userData = meRes.data;
+
+                // Calculate Stats - Channel stats are flattened now (reach, subscribers)
+                const totalViews = channels.reduce((acc, ch) => acc + (ch.reach || ch.subscribers || 0), 0);
+                const activeDeals = deals.filter(d => !['completed', 'cancelled', 'rejected'].includes(d.state)).length;
+
+                // Sort deals by date (newest first)
+                const sortedDeals = deals.sort((a, b) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
+
+                setStats({
+                    totalViews,
+                    activeDeals,
+                    earnings: 0, // TODO: Calculate from completed deals or fetch specific endpoint
+                    balance: userData.balance_ton || '0'
+                });
+                setRecentDeals(sortedDeals);
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const formatNumber = (num: number) => {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+        return num.toString();
+    };
 
     return (
-        <div className="flex flex-col min-h-[80vh] pt-10 px-4">
-            <div className="flex-1 space-y-8">
-                {/* Hero Section */}
-                <div className="space-y-2 text-center">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        Hello, {user?.first_name || 'Guest'}
-                    </h1>
-                    <p className="text-white/60">
-                        Welcome to the premier marketplace for Telegram ads. Connect, deal, and grow.
-                    </p>
-                </div>
+        <div className="flex flex-col min-h-screen pt-20 pb-24 px-4 space-y-6">
 
-                {/* Quick Actions Grid */}
-                <div className="grid grid-cols-1 gap-4">
+            {/* Analytics Cards Grid */}
+            <div className="grid grid-cols-2 gap-4">
+                {/* Total Views - Spans full width on small screens if needed, or just 1st */}
+                <AnalyticsCard
+                    title="Total Views"
+                    value={formatNumber(stats.totalViews)}
+                    trend="↑ 15% this week"
+                    trendColor="green"
+                    icon={TrendingUp}
+                    color="blue"
+                    className="col-span-2"
+                />
+
+                <AnalyticsCard
+                    title="Active Deals"
+                    value={stats.activeDeals}
+                    trend={stats.activeDeals > 0 ? "Action needed" : "No active deals"}
+                    trendColor={stats.activeDeals > 0 ? "green" : "neutral"}
+                    icon={PieChart}
+                    color="purple"
+                />
+
+                <AnalyticsCard
+                    title="Balance"
+                    value={`${Number(stats.balance).toFixed(2)} TON`}
+                    trend="Wallet Balance"
+                    trendColor="neutral"
+                    icon={Wallet}
+                    color="blue"
+                />
+            </div>
+
+            {/* Recent Campaigns / Activity */}
+            <div className="space-y-4">
+                <RecentCampaignsList deals={recentDeals} isLoading={loading} />
+            </div>
+
+            {/* Quick Actions (Optional, but good for empty states) */}
+            {recentDeals.length === 0 && !loading && (
+                <div className="p-6 rounded-2xl glass border border-white/5 text-center space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto text-blue-400">
+                        <Telescope size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white">Start Exploring</h3>
+                        <p className="text-xs text-white/50 px-8">
+                            Find channels to advertise on or register your own to start earning.
+                        </p>
+                    </div>
                     <button
                         onClick={() => navigate('/explorer')}
-                        className="group relative p-6 glass-card hover:bg-white/10 transition-all text-left overflow-hidden"
+                        className="px-6 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm transition-colors"
                     >
-                        <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Telescope size={80} />
-                        </div>
-                        <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
-                            <Telescope size={20} className="text-blue-400" />
-                            Explore
-                        </h3>
-                        <p className="text-sm text-white/50 max-w-[80%]">
-                            Find channels or campaigns to partner with.
-                        </p>
+                        Explore Channels
                     </button>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            onClick={() => navigate('/campaigns')}
-                            className="p-4 glass-card hover:bg-white/10 transition-all text-left flex flex-col justify-between h-32"
-                        >
-                            <Megaphone size={24} className="text-purple-400 mb-2" />
-                            <div>
-                                <h3 className="font-bold text-sm">My Campaigns</h3>
-                                <p className="text-[10px] text-white/50">Manage ads</p>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => navigate('/channels')}
-                            className="p-4 glass-card hover:bg-white/10 transition-all text-left flex flex-col justify-between h-32"
-                        >
-                            <Radio size={24} className="text-green-400 mb-2" />
-                            <div>
-                                <h3 className="font-bold text-sm">My Channels</h3>
-                                <p className="text-[10px] text-white/50">Monetize</p>
-                            </div>
-                        </button>
-                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

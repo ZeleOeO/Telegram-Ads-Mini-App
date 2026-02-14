@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Search, Globe, Users, MessageSquare, Megaphone, CheckCircle2 } from 'lucide-react';
+import { Search, Globe, Users, MessageSquare, Megaphone, CheckCircle2, Eye, Sparkles } from 'lucide-react';
 import { api } from '../lib/api';
 import { useTelegram } from '../hooks/useTelegram';
 import { ChannelDetailsModal } from '../components/ChannelDetailsModal';
@@ -14,6 +14,7 @@ export function Explorer() {
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<Record<string, string | number | undefined>>({});
+    const [sortBy, setSortBy] = useState<string>('newest');
 
     // Modal states
     const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
@@ -25,7 +26,7 @@ export function Explorer() {
         setLoading(true);
         try {
             const [channelsRes, campaignsRes] = await Promise.all([
-                api.get('/channels', { params: filters }),
+                api.get('/channels', { params: { ...filters, sort: sortBy } }),
                 api.get('/campaigns')
             ]);
             setChannels(channelsRes.data);
@@ -35,7 +36,7 @@ export function Explorer() {
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, [filters, sortBy]);
 
     useEffect(() => {
         loadData();
@@ -83,7 +84,20 @@ export function Explorer() {
         <div className="space-y-6 pb-24">
             {/* Header & Tabs */}
             <div className="space-y-4 pt-4">
-                <h2 className="text-2xl font-bold px-2">Explore</h2>
+                <div className="flex justify-between items-center px-2">
+                    <h2 className="text-2xl font-bold">Explore</h2>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="appearance-none bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-white/60 focus:outline-none focus:border-blue-500/50"
+                    >
+                        <option value="newest">Newest</option>
+                        <option value="subscribers_desc">Top Subs</option>
+                        <option value="reach_desc">Top Reach</option>
+                        <option value="premium_desc">Top Premium</option>
+                        <option value="price_asc">Best Price</option>
+                    </select>
+                </div>
 
                 <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
                     <button
@@ -243,14 +257,49 @@ export function Explorer() {
                                             View
                                         </button>
                                     </div>
-                                    <div className="flex flex-wrap gap-3 text-[10px] text-white/40 uppercase font-bold tracking-wider">
-                                        <span className="flex items-center gap-1.5"><Users size={12} className="text-blue-400/50" /> {channel.subscribers?.toLocaleString() || 0}</span>
-                                        <span className="flex items-center gap-1.5"><Globe size={12} className="text-purple-400/50" /> {channel.language || 'Global'}</span>
-                                        {channel.category && (
-                                            <span className="px-2 py-0.5 bg-white/5 border border-white/5 rounded-md text-blue-400/80">
-                                                {channel.category}
-                                            </span>
+                                    <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-lg">
+                                            <Users size={12} className="text-blue-400" />
+                                            <div>
+                                                <p className="text-[10px] text-white/40 font-bold uppercase">Subs</p>
+                                                <p className="text-xs font-bold">
+                                                    {channel.subscribers
+                                                        ? (channel.subscribers >= 1000
+                                                            ? (channel.subscribers / 1000).toFixed(1) + 'k'
+                                                            : channel.subscribers)
+                                                        : 0}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-lg">
+                                            <Eye size={12} className="text-green-400" />
+                                            <div>
+                                                <p className="text-[10px] text-white/40 font-bold uppercase">Avg Views</p>
+                                                <p className="text-xs font-bold">
+                                                    {channel.reach
+                                                        ? (channel.reach < 1000
+                                                            ? channel.reach
+                                                            : (channel.reach / 1000).toFixed(1) + 'k')
+                                                        : 0}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {(channel.premium_percentage !== undefined && channel.premium_percentage !== null) && (
+                                            <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-lg">
+                                                <Sparkles size={12} className="text-yellow-400" />
+                                                <div>
+                                                    <p className="text-[10px] text-white/40 font-bold uppercase">Premium Users</p>
+                                                    <p className="text-xs font-bold text-yellow-500">{channel.premium_percentage}%</p>
+                                                </div>
+                                            </div>
                                         )}
+                                        <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-lg">
+                                            <Globe size={12} className="text-purple-400" />
+                                            <div>
+                                                <p className="text-[10px] text-white/40 font-bold uppercase">Lang</p>
+                                                <p className="text-xs font-bold">{channel.language || 'Global'}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))
