@@ -15,7 +15,7 @@ use tower_http::{
     cors::CorsLayer,
     services::{ServeDir, ServeFile},
 };
-use tracing::info;
+use tracing::{info, error};
 use std::sync::Arc;
 use crate::{entity::users, models::errors::BotResult, services::grammers_client::GrammersClient};
 pub mod auth;
