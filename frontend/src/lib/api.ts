@@ -5,7 +5,7 @@ export const api = axios.create({
     baseURL: '', // Relative path since we serve from same origin
     headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
+
         'Bypass-Tunnel-Reminder': 'true',
     },
 });

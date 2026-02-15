@@ -194,7 +194,6 @@ async fn main() -> anyhow::Result<()> {
             ServeDir::new("frontend/dist")
                 .not_found_service(ServeFile::new("frontend/dist/index.html")),
         )
-        .layer(middleware::from_fn(skip_ngrok_browser_warning))
         .layer(CorsLayer::permissive())
         .with_state(app_state);
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
@@ -248,11 +247,4 @@ async fn handle_commands(
     }
     Ok(())
 }
-async fn skip_ngrok_browser_warning(request: Request, next: Next) -> Response {
-    let mut response = next.run(request).await;
-    response.headers_mut().insert(
-        header::HeaderName::from_static("ngrok-skip-browser-warning"),
-        HeaderValue::from_static("true"),
-    );
-    response
-}
+
