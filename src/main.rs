@@ -193,7 +193,7 @@ async fn main() -> anyhow::Result<()> {
         .layer(middleware::from_fn(skip_ngrok_browser_warning))
         .layer(CorsLayer::permissive())
         .with_state(app_state);
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+    let listener = tokio::net::TcpListener::bind("0.0.0.1:3000").await?;
     info!("Web server listening on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
     Ok(())
