@@ -27,7 +27,7 @@ RUN touch src/main.rs migration/src/lib.rs
 
 RUN cargo build --release
 
-FROM debian:bookworm-slim AS runtime
+FROM debian:testing-slim AS runtime
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
