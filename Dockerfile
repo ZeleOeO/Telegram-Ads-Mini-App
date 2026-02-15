@@ -11,7 +11,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM rust:1.81-slim-bullseye AS backend-builder
+FROM rust:latest AS backend-builder
 WORKDIR /app
 
 # Install build dependencies (needed for some crates like link-cplusplus or openssl-sys)

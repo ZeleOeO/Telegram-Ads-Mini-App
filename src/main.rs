@@ -24,6 +24,7 @@ pub mod handlers;
 pub mod models;
 pub mod services;
 pub mod helpers;
+use migration::{Migrator, MigratorTrait};
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase")]
 enum Command {
@@ -44,7 +45,9 @@ async fn main() -> anyhow::Result<()> {
     let db = Database::connect(&database_url)
         .await
         .expect("Failed to connect to database");
-    info!("Database connection");
+    info!("Database connection established");
+    Migrator::up(&db, None).await?;
+    info!("Migrations applied successfully");
     let bot = Bot::from_env();
     let grammers = GrammersClient::default();
     let grammers_arc = Arc::new(grammers);

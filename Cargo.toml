@@ -45,6 +45,7 @@ grammers-client = "0.7"
 grammers-tl-types = "0.7"
 grammers-session = "0.7"
 ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+migration = { path = "migration" }
 
 
 [dev-dependencies]
