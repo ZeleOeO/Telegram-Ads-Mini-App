@@ -19,13 +19,11 @@ This application bridges the gap between advertisers and Telegram channel owners
 
 ### Architecture & Key Decisions
 - **Unified Monolith**: Built as a single deployable unit where the high-performance Rust backend (Axum) serves the static React frontend. This simplifies deployment and reduces latency.
-- **MTProto Integration**: Unlike standard bots, we use the `grammers` library to connect as a user client. This unlocks deep analytics (views, shares, languages) unavailable to regular bots.
-- **Real On-Chain Escrow**: Payments are secured via custodial wallets on the TON blockchain. Authenticated via `ed25519` keypairs, funds are verified on-chain before any service is rendered.
-- **Event-Driven Workflow**: The deal flow utilizes a state machine pattern to manage complex transitions (Draft -> Review -> Scheduled -> Published -> Verified).
+- **MTProto Integration**: It uses `grammers` library to connect as a user client. Which allows for analytics (views, shares, languages) unavailable to regular bots.
+- **Real On-Chain Escrow**: Payments are conducted via wallets on the TON blockchain. Authenticated by `ed25519` keypairs, funds are verified on-chain before any service is rendered.
+- **Event-Driven Workflow**: The deal flow utilizes a state machine pattern to manage complex transitions (Payment -> Draft -> Review -> Scheduled -> Published -> Verified). Regardless of how the deal is initiated, this would always be the convergence point.
 
 ### Features
-
-
 - **Deep Analytics**: Fetch true reach, engagement rates, and audience demographics using MTProto.
 - **Ad Marketplace**: Browse channels, filter by niche/price, and initiate deals.
 - **Secure Escrow**: Automated TON wallet generation and payment verification.
@@ -34,30 +32,25 @@ This application bridges the gap between advertisers and Telegram channel owners
 
 ### Future Thoughts & Limitations
 - **Scaling MTProto**: Currently relies on a single session file. For high scale, a worker pool of sessions would be needed to avoid rate limits.
-- **TON Integration**: Currently uses a custodial model. Future improvements could integrate non-custodial smart contracts (TON Connect) for even greater trustlessness.
-- **Mobile Support**: The frontend is optimized for Telegram Mini Apps but could be expanded into a standalone PWA.
+- **TON Integration**: Currently uses a custodial model. Future improvements could integrate non-custodial smart contracts (TON Connect) for even better decentralization.
+
 
 ### AI Contribution
 - **Percentage of Code Written by AI**: ~40%. Mostly the UI
 
 ## Demo
 
-
-
-
-Try the test bot deployed on Telegram:
+Try the bot deployed on Telegram:
 [**@ad_market_place_bot**](https://t.me/ad_market_place_bot)
 
 ## Prerequisites
-
-
 
 - Docker & Docker Compose (Recommended)
 - **Optional** - Rust 1.81+ & Node.js 20+ (For local dev)
 - A Telegram App `api_id` and `api_hash` from [my.telegram.org](https://my.telegram.org)
 
-## Installation (With Git)
 
+## Installation (With Git)
 
 1. Clone the repository:
    ```bash
@@ -90,10 +83,7 @@ This app is optimized for [Railway.app](https://railway.app).
     *   `PORT`: `3000`
 4.  **Done**: The app handles HTTPS and database migrations automatically.
 
-### Manual VPS Deployment
-If you prefer a VPS (DigitalOcean/Hetzner), use the provided scripts:
-1.  `./setup_server.sh` (Installs Docker)
-2.  `./deploy.sh` (Runs the app)
+
 
 ### Local Development
 
@@ -107,6 +97,8 @@ cargo run
 cd frontend
 npm install
 npm run build
+cd ..
+cargo run -bin telegram-ad-mini-app
 ```
 
 ## Usage
@@ -120,6 +112,8 @@ npm run build
 
 
 Run backend tests with:
+
+I currently don't have any tests, bad practice. Would work on creating a test suite later
 
 ```shell
 cargo test
