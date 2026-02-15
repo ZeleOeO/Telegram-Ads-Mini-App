@@ -40,7 +40,7 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
-    // dotenvy::dotenv().ok(); // Disabled for production to avoid conflicts
+    // dotenvy::dotenv().ok();
     
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     if database_url.is_empty() {
