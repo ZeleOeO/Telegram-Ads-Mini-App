@@ -76,38 +76,24 @@ Try the test bot deployed on Telegram:
 ## Running
 
 
-### Deployment Guide
+### Deployment Guide (Railway)
 
-#### 1. Choose a VPS Provider
-- **Free Options**:
-  - **Oracle Cloud** (Always Free Tier: 4 ARM Cores, 24GB RAM - Highly Recommended)
-  - **Google Cloud** (e2-micro: Very limited, good for small tests)
-- **Budget Options**:
-  - **Hetzner** (~€5/mo: Best performance/price ratio in Europe/US)
-  - **DigitalOcean** ($4/mo Droplets)
-  - **Vultr** ($2.50/mo IPv6 only, or $5 regular)
+**Recommended Method:**
+This app is optimized for [Railway.app](https://railway.app).
 
-#### 2. Server Setup (One-Command)
-SSH into your new server and run:
-```bash
-# Install Docker & Git automatically
-curl -sSL https://raw.githubusercontent.com/your-username/telegram-ad-mini-app/main/setup_server.sh | bash
-```
+1.  **Create Project**: "New Project" -> "Deploy from GitHub repo".
+2.  **Add Database**: Add a PostgreSQL service.
+3.  **Configure Env Vars** (In App Service -> Variables):
+    *   `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELOXIDE_TOKEN`
+    *   `ESCROW_SECRET_KEY`, `TON_NETWORK`
+    *   `DATABASE_URL`: **IMPORTANT** - Copy the "Connection URL" from the Postgres service and paste it here manually.
+    *   `PORT`: `3000`
+4.  **Done**: The app handles HTTPS and database migrations automatically.
 
-#### 3. Deploy Application
-```bash
-# 1. Clone your repo
-git clone https://github.com/your-username/telegram-ad-mini-app.git
-cd telegram-ad-mini-app
-
-# 2. Configure Environment
-cp env.example .env
-nano .env  # Add your API_ID, API_HASH, BOT_TOKEN, etc.
-
-# 3. Launch
-./deploy.sh
-```
-The app will be live at `http://YOUR_SERVER_IP:3000`.
+### Manual VPS Deployment
+If you prefer a VPS (DigitalOcean/Hetzner), use the provided scripts:
+1.  `./setup_server.sh` (Installs Docker)
+2.  `./deploy.sh` (Runs the app)
 
 ### Local Development
 

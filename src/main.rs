@@ -15,7 +15,7 @@ use tower_http::{
     cors::CorsLayer,
     services::{ServeDir, ServeFile},
 };
-use tracing::{info, error};
+use tracing::info;
 use std::sync::Arc;
 use crate::{entity::users, models::errors::BotResult, services::grammers_client::GrammersClient};
 pub mod auth;
@@ -40,24 +40,11 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
+    // dotenvy::dotenv().ok(); // Disabled for production to avoid conflicts
     
-    info!("------ STARTING APP ------");
-    for (key, val) in env::vars() {
-        if key == "DATABASE_URL" {
-             info!("DATABASE_URL length: {}", val.len());
-             if val.is_empty() { info!("DATABASE_URL is EMPTY"); }
-             else { info!("DATABASE_URL starts with: {}", &val[0..10.min(val.len())]); }
-        }
-        if key == "PORT" { info!("PORT: {}", val); }
-    }
-    
-    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
-        error!("DATABASE_URL is MISSING from env vars");
-        String::new()
-    });
-
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     if database_url.is_empty() {
-        panic!("CRITICAL ERROR: DATABASE_URL is missing or empty.");
+        panic!("DATABASE_URL is set but empty");
     }
     let db = Database::connect(&database_url)
         .await
