@@ -42,7 +42,6 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();
     
-    // DEBUG: Printing Environment Variables (Safe keys only)
     info!("------ STARTING APP ------");
     for (key, val) in env::vars() {
         if key == "DATABASE_URL" {
@@ -55,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
     
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
         error!("DATABASE_URL is MISSING from env vars");
-        String::new() // Return empty to allow flow to continue to next check
+        String::new()
     });
 
     if database_url.is_empty() {
