@@ -27,10 +27,10 @@ RUN touch src/main.rs migration/src/lib.rs
 
 RUN cargo build --release
 
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y ca-certificates libssl1.1 openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend-builder /app/target/release/telegram-ad-mini-app ./telegram-ad-mini-app
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
