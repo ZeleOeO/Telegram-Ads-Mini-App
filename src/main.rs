@@ -41,7 +41,26 @@ pub struct AppState {
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    
+    // DEBUG: Printing Environment Variables (Safe keys only)
+    info!("------ STARTING APP ------");
+    for (key, val) in env::vars() {
+        if key == "DATABASE_URL" {
+             info!("DATABASE_URL length: {}", val.len());
+             if val.is_empty() { info!("DATABASE_URL is EMPTY"); }
+             else { info!("DATABASE_URL starts with: {}", &val[0..10.min(val.len())]); }
+        }
+        if key == "PORT" { info!("PORT: {}", val); }
+    }
+    
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+        error!("DATABASE_URL is MISSING from env vars");
+        String::new() // Return empty to allow flow to continue to next check
+    });
+
+    if database_url.is_empty() {
+        panic!("CRITICAL ERROR: DATABASE_URL is missing or empty.");
+    }
     let db = Database::connect(&database_url)
         .await
         .expect("Failed to connect to database");
@@ -193,7 +212,7 @@ async fn main() -> anyhow::Result<()> {
         .layer(middleware::from_fn(skip_ngrok_browser_warning))
         .layer(CorsLayer::permissive())
         .with_state(app_state);
-    let listener = tokio::net::TcpListener::bind("0.0.0.1:3000").await?;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     info!("Web server listening on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
     Ok(())
