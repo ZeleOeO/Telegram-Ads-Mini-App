@@ -86,7 +86,7 @@ This app is optimized for [Railway.app](https://railway.app).
 3.  **Configure Env Vars** (In App Service -> Variables):
     *   `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELOXIDE_TOKEN`
     *   `ESCROW_SECRET_KEY`, `TON_NETWORK`
-    *   `DATABASE_URL`: **IMPORTANT** - Copy the "Connection URL" from the Postgres service and paste it here manually.
+    *   `DATABASE_URL`
     *   `PORT`: `3000`
 4.  **Done**: The app handles HTTPS and database migrations automatically.
 

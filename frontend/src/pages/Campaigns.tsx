@@ -222,7 +222,7 @@ export function Campaigns() {
                                         <textarea
                                             value={brief}
                                             onChange={e => setBrief(e.target.value)}
-                                            placeholder="Place ad here..."
+                                            placeholder="Describe your Ad/Campaign goals, vision, ideas, etc. Be detailed and explanatory."
                                             className="w-full h-24 px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-blue-500/50 resize-none"
                                             required
                                         />
