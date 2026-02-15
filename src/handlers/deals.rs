@@ -646,6 +646,26 @@ pub async fn verify_post(
             format!("Cannot verify from state: {}", deal.state),
         ));
     }
+
+    // CRITICAL: Release funds from escrow
+    // Finds the channel owner's wallet address to send funds to
+    let channel = channels::Entity::find_by_id(deal.channel_id)
+        .one(&state.db)
+        .await?
+        .ok_or_else(|| ApiError::NotFound("Channel not found".to_string()))?;
+        
+    let owner = users::Entity::find_by_id(channel.owner_id)
+        .one(&state.db)
+        .await?
+        .ok_or_else(|| ApiError::NotFound("Channel owner not found".to_string()))?;
+
+    let destination_address = owner.ton_wallet_address
+        .ok_or_else(|| ApiError::BadRequest("Channel owner has not connected a wallet to receive funds. Please ask them to open the app.".to_string()))?;
+
+    // Attempt to release funds
+    services::escrow_ton::release_funds(&state.db, deal.id, &destination_address).await
+        .map_err(|e| ApiError::Internal(format!("Failed to release funds: {:?}", e)))?;
+
     let mut active_deal: deals::ActiveModel = deal.into();
     active_deal.payment_status = Set("released".to_string());
     active_deal.state = Set("completed".to_string());

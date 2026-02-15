@@ -70,7 +70,7 @@ export function Deals() {
 
 
     return (
-        <div className="space-y-6 pb-24">
+        <div className="flex flex-col min-h-screen pt-20 pb-24 px-4 space-y-6">
             <div className="flex flex-col gap-4 pt-4">
                 <div className="flex justify-between items-center px-1">
                     <h2 style={{

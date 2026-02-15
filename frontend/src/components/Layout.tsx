@@ -4,8 +4,10 @@ import { Header } from './Header';
 import { useTelegram } from '../hooks/useTelegram';
 import { useEffect } from 'react';
 import { api, setAuthToken } from '../lib/api';
+import { useWalletSync } from '../hooks/useWalletSync';
 
 export function Layout() {
+    useWalletSync();
     const { initData, isReady } = useTelegram();
 
     // Sync auth token when initData is ready and call /me to persist user data
@@ -40,3 +42,4 @@ export function Layout() {
         </div>
     );
 }
+

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Image as ImageIcon, Trash2, Users, Tag } from 'lucide-react';
+import { Plus, X, Trash2, Users, Tag } from 'lucide-react';
 import { api } from '../lib/api';
 import { useTelegram } from '../hooks/useTelegram';
 import { CampaignApplicationsModal } from '../components/CampaignApplicationsModal';
@@ -17,7 +17,7 @@ export function Campaigns() {
     const [brief, setBrief] = useState('');
     const [budget, setBudget] = useState('');
     const [minSubs, setMinSubs] = useState('');
-    const [mediaUrls, setMediaUrls] = useState<string[]>(['']);
+
     const [categories, setCategories] = useState<string[]>([]);
     const [newCategory, setNewCategory] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -44,11 +44,12 @@ export function Campaigns() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const validUrls = mediaUrls.filter((u: string) => u.trim().length > 0);
             const payload = {
                 title,
                 brief,
-                media_urls: validUrls.length > 0 ? validUrls : null,
+                budget_ton: parseFloat(budget),
+                target_subscribers_min: minSubs ? parseInt(minSubs) : null,
+                media_urls: [], // No longer used
                 categories: categories.length > 0 ? categories : null
             };
 
@@ -77,7 +78,6 @@ export function Campaigns() {
         setBrief('');
         setBudget('');
         setMinSubs('');
-        setMediaUrls(['']);
         setCategories([]);
         setNewCategory('');
         setEditingCampaignId(null);
@@ -89,13 +89,6 @@ export function Campaigns() {
         setBrief(c.brief);
         setBudget(c.budget_ton.toString());
         setMinSubs(c.target_subscribers_min?.toString() || '');
-        let urls = [''];
-        if (Array.isArray(c.media_urls)) {
-            urls = c.media_urls;
-        } else if (typeof c.media_urls === 'string') {
-            urls = (c.media_urls as string).split(',');
-        }
-        setMediaUrls(urls.length > 0 ? urls : ['']);
         setCategories(c.categories || []);
         setShowModal(true);
     };
@@ -108,19 +101,6 @@ export function Campaigns() {
             loadMyCampaigns();
         } catch (e) {
             alert('Failed to delete campaign');
-        }
-    };
-
-    const updateMediaUrl = (index: number, value: string) => {
-        const newUrls = [...mediaUrls];
-        newUrls[index] = value;
-        setMediaUrls(newUrls);
-    };
-
-    const addMediaField = () => setMediaUrls([...mediaUrls, '']);
-    const removeMediaField = (index: number) => {
-        if (mediaUrls.length > 1) {
-            setMediaUrls(mediaUrls.filter((_: string, i: number) => i !== index));
         }
     };
 
@@ -318,38 +298,7 @@ export function Campaigns() {
                                             )}
                                         </div>
 
-                                        <div className="space-y-2 pt-2">
-                                            <label className="text-xs text-white/60 ml-1 flex items-center gap-2">
-                                                <ImageIcon size={14} /> Creative Assets (URLs)
-                                            </label>
-                                            {mediaUrls.map((url: string, idx: number) => (
-                                                <div key={idx} className="flex gap-2">
-                                                    <input
-                                                        type="url"
-                                                        value={url}
-                                                        onChange={e => updateMediaUrl(idx, e.target.value)}
-                                                        placeholder="https://imgur.com/..."
-                                                        className="flex-1 h-10 px-3 bg-black/20 border border-white/10 rounded-xl text-xs font-mono"
-                                                    />
-                                                    {mediaUrls.length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeMediaField(idx)}
-                                                            className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            <button
-                                                type="button"
-                                                onClick={addMediaField}
-                                                className="text-xs text-blue-400 hover:text-blue-300 ml-1"
-                                            >
-                                                + Add another URL
-                                            </button>
-                                        </div>
+
 
                                         <button
                                             type="submit"

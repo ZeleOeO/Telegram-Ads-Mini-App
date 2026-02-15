@@ -1,12 +1,9 @@
 # Telegram Ad Mini App
 
----
-
 A comprehensive platform for managing Telegram ad campaigns, channel analytics, and secure escrow payments on the TON blockchain.
 
 ## Technologies
 
----
 
 ![Rust](https://img.shields.io/badge/Rust-1.81%2B-orange?logo=rust&logoColor=white)
 ![React](https://img.shields.io/badge/React-18.3-blue?logo=react&logoColor=white)
@@ -17,7 +14,6 @@ A comprehensive platform for managing Telegram ad campaigns, channel analytics, 
 
 ## Project Overview
 
----
 
 This application bridges the gap between advertisers and Telegram channel owners by providing a trustless, transparent marketplace for ad deals.
 
@@ -29,7 +25,6 @@ This application bridges the gap between advertisers and Telegram channel owners
 
 ### Features
 
----
 
 - **Deep Analytics**: Fetch true reach, engagement rates, and audience demographics using MTProto.
 - **Ad Marketplace**: Browse channels, filter by niche/price, and initiate deals.
@@ -43,21 +38,19 @@ This application bridges the gap between advertisers and Telegram channel owners
 - **Mobile Support**: The frontend is optimized for Telegram Mini Apps but could be expanded into a standalone PWA.
 
 ### AI Contribution
-- **Percentage of Code Written by AI**: ~99%
-- This entire codebase, including backend logic, frontend UI, database schema, and deployment configuration, was generated through iterative prompting with an agentic AI assistant.
+- **Percentage of Code Written by AI**: ~40%. Mostly the UI
 
 ## Demo
 
----
 
-![Dashboard Preview](/Users/zele/.gemini/antigravity/brain/55825d83-cbbe-434d-983e-00fb1e16f11d/telegram_mini_app_dashboard_mockup_1770981321684.png)
+
 
 Try the test bot deployed on Telegram:
-[**@YourTestBotUsername**](https://t.me/YourTestBotUsername) *(Replace with actual bot link)*
+[**@ad_market_place_bot**](https://t.me/ad_market_place_bot)
 
 ## Prerequisites
 
----
+
 
 - Docker & Docker Compose (Recommended)
 - **Optional** - Rust 1.81+ & Node.js 20+ (For local dev)
@@ -65,11 +58,10 @@ Try the test bot deployed on Telegram:
 
 ## Installation (With Git)
 
----
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/telegram-ad-mini-app.git
+   git clone https://github.com/ZeleOeO/telegram-ad-mini-app.git
    ```
 2. Navigate to the project directory:
    ```bash
@@ -83,7 +75,6 @@ Try the test bot deployed on Telegram:
 
 ## Running
 
----
 
 ### Deployment Guide
 
@@ -134,7 +125,6 @@ npm run build
 
 ## Usage
 
----
 
 1. Open the Mini App in Telegram via the bot menu or direct link.
 2. **Channel Owners**: Register your channel, view analytics, and accept deals.
@@ -142,7 +132,6 @@ npm run build
 
 ## Testing
 
----
 
 Run backend tests with:
 
@@ -152,7 +141,6 @@ cargo test
 
 ## Steps to Contribute
 
----
 
 Contributions are welcome!
 

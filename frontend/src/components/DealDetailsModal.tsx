@@ -307,7 +307,7 @@ export function DealDetailsModal({ deal, dealId, onClose, onRefresh }: DealDetai
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-muted uppercase tracking-wider ml-1">Workflow Stage</h4>
                             <div className="space-y-3 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-white/10">
-                                <div className="flex gap-4 relative">
+                                <div className="flex gap-4 relative items-center">
                                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${activeDeal.created_at ? 'bg-blue-500 text-black' : 'bg-white/10'}`}>
                                         <Clock size={12} />
                                     </div>
@@ -316,7 +316,7 @@ export function DealDetailsModal({ deal, dealId, onClose, onRefresh }: DealDetai
                                         <div className="text-[10px] text-muted">{activeDeal.created_at ? formatDate(activeDeal.created_at) : 'Pending...'}</div>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 relative">
+                                <div className="flex gap-4 relative items-center">
                                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${activeDeal.creative_submitted_at ? 'bg-blue-500 text-black' : 'bg-white/10'}`}>
                                         <MessageSquare size={12} />
                                     </div>
@@ -325,7 +325,7 @@ export function DealDetailsModal({ deal, dealId, onClose, onRefresh }: DealDetai
                                         <div className="text-[10px] text-muted">{activeDeal.creative_submitted_at ? formatDate(activeDeal.creative_submitted_at) : 'Waiting for advertiser...'}</div>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 relative">
+                                <div className="flex gap-4 relative items-center">
                                     <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${activeDeal.state === 'Completed' ? 'bg-green-500 text-black' : 'bg-white/10'}`}>
                                         <CheckCircle2 size={12} />
                                     </div>
@@ -370,13 +370,13 @@ export function DealDetailsModal({ deal, dealId, onClose, onRefresh }: DealDetai
                                 />
                                 <div className="space-y-2">
                                     <label className="text-[10px] text-muted uppercase flex items-center gap-1">
-                                        <Calendar size={12} /> Schedule Post Time
+                                        <Calendar size={12} /> Schedule Post Time (UTC)
                                     </label>
                                     <input
                                         type="datetime-local"
                                         value={scheduledTime}
                                         onChange={e => setScheduledTime(e.target.value)}
-                                        className="w-full h-10 glass rounded-xl px-3 text-sm focus:outline-none focus:border-green-500/50"
+                                        className="w-full h-12 glass rounded-xl px-3 text-sm focus:outline-none focus:border-green-500/50 flex items-center"
                                     />
                                 </div>
                                 <button

@@ -2,13 +2,10 @@ use crate::AppState;
 use crate::entity::{deals, channels};
 use crate::services::auto_post;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, Set, ActiveModelTrait};
-use std::time::Duration;
-use tokio::time::sleep;
 use tracing::{info, error, warn};
 use chrono::Utc;
 use teloxide::types::ChatId;
 use tokio_cron_scheduler::{JobScheduler, Job};
-use crate::helpers;
 pub async fn start_scheduler(state: AppState) {
     info!("Starting background scheduler...");
     let sched = JobScheduler::new().await.unwrap();
@@ -123,20 +120,40 @@ async fn check_completed_deals(state: AppState) -> anyhow::Result<()> {
                          }
                     }
                 }
-            } else {
                 warn!("Cannot verify deal #{}: Channel has no username (private channel?)", deal.id);
             }
-        }
-        if verified {
-            let mut active_deal: deals::ActiveModel = deal.into();
-            active_deal.state = Set("completed".to_string());
-            active_deal.payment_status = Set("released".to_string());
-            active_deal.funds_released_at = Set(Some(Utc::now().naive_utc()));
-            active_deal.post_verified_at = Set(Some(Utc::now().naive_utc()));
-            active_deal.updated_at = Set(Utc::now().naive_utc());
-            match active_deal.update(&state.db).await {
-                Ok(updated) => info!("Deal #{} completed and funds released", updated.id),
-                Err(e) => error!("Failed to complete deal: {:?}", e),
+
+            if verified {
+                let mut payment_released = false;
+                // Attempt release funds
+                if let Ok(Some(owner)) = crate::entity::users::Entity::find_by_id(channel.owner_id).one(&state.db).await {
+                    if let Some(addr) = owner.ton_wallet_address {
+                        match crate::services::escrow_ton::release_funds(&state.db, deal.id, &addr).await {
+                             Ok(_) => {
+                                 info!("Funds released successfully for deal #{}", deal.id);
+                                 payment_released = true;
+                             },
+                             Err(e) => error!("Failed to release funds for deal #{}: {:?}", deal.id, e),
+                        }
+                    } else {
+                        error!("Cannot release funds for deal #{}: Owner has no wallet address", deal.id);
+                    }
+                } else {
+                     error!("Cannot release funds for deal #{}: Owner not found", deal.id);
+                }
+
+                if payment_released {
+                    let mut active_deal: deals::ActiveModel = deal.into();
+                    active_deal.state = Set("completed".to_string());
+                    active_deal.payment_status = Set("released".to_string());
+                    active_deal.funds_released_at = Set(Some(Utc::now().naive_utc()));
+                    active_deal.post_verified_at = Set(Some(Utc::now().naive_utc()));
+                    active_deal.updated_at = Set(Utc::now().naive_utc());
+                    match active_deal.update(&state.db).await {
+                        Ok(updated) => info!("Deal #{} completed and funds released", updated.id),
+                        Err(e) => error!("Failed to complete deal: {:?}", e),
+                    }
+                }
             }
         } else {
              info!("Deal #{} verification pending/failed. Will retry.", deal.id);

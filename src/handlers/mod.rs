@@ -3,6 +3,8 @@ pub mod campaigns;
 pub mod channels;
 pub mod deals;
 pub mod payments;
+pub mod users;
+
 pub use teloxide::types::Update;
 use crate::models::errors::ApiResult;
 use crate::{AppState, auth};

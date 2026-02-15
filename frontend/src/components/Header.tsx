@@ -1,4 +1,5 @@
-import { Menu, User, Bell } from 'lucide-react';
+import { User } from 'lucide-react';
+import { TonConnectButton } from '@tonconnect/ui-react';
 import { useState, useEffect } from 'react';
 import { useTelegram } from '../hooks/useTelegram';
 
@@ -50,13 +51,7 @@ export function Header() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-                <button className="w-10 h-10 rounded-xl glass flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors relative">
-                    <Bell size={20} />
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-background" />
-                </button>
-                <button className="w-10 h-10 rounded-xl glass flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors">
-                    <Menu size={20} />
-                </button>
+                <TonConnectButton className="ton-connect-button-custom" />
             </div>
         </header>
     );

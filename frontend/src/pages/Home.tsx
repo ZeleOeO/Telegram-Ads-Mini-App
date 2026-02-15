@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Telescope, TrendingUp, PieChart, Wallet } from 'lucide-react';
+import { Telescope, PieChart } from 'lucide-react';
 import { useTelegram } from '../hooks/useTelegram';
 import { api } from '../lib/api';
 import { AnalyticsCard } from '../components/AnalyticsCard';
 import { RecentCampaignsList } from '../components/RecentCampaignsList';
-import type { Deal, Channel } from '../types';
+import type { Deal } from '../types';
 
 export function Home() {
     const navigate = useNavigate();
-    useTelegram();
+    const { user } = useTelegram();
     const [stats, setStats] = useState({
-        totalViews: 0,
         activeDeals: 0,
         earnings: 0,
         balance: '0'
@@ -22,18 +21,14 @@ export function Home() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [dealsRes, channelsRes, meRes] = await Promise.all([
+                const [dealsRes, meRes] = await Promise.all([
                     api.get('/deals/my'),
-                    api.get('/channels/my'),
                     api.get('/me')
                 ]);
 
                 const deals = dealsRes.data as Deal[];
-                const channels = channelsRes.data as Channel[];
                 const userData = meRes.data;
 
-                // Calculate Stats - Channel stats are flattened now (reach, subscribers)
-                const totalViews = channels.reduce((acc, ch) => acc + (ch.reach || ch.subscribers || 0), 0);
                 const activeDeals = deals.filter(d => !['completed', 'cancelled', 'rejected'].includes(d.state)).length;
 
                 // Sort deals by date (newest first)
@@ -42,7 +37,6 @@ export function Home() {
                 );
 
                 setStats({
-                    totalViews,
                     activeDeals,
                     earnings: 0, // TODO: Calculate from completed deals or fetch specific endpoint
                     balance: userData.balance_ton || '0'
@@ -58,28 +52,21 @@ export function Home() {
         fetchData();
     }, []);
 
-    const formatNumber = (num: number) => {
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-        return num.toString();
-    };
-
     return (
         <div className="flex flex-col min-h-screen pt-20 pb-24 px-4 space-y-6">
 
-            {/* Analytics Cards Grid */}
-            <div className="grid grid-cols-2 gap-4">
-                {/* Total Views - Spans full width on small screens if needed, or just 1st */}
-                <AnalyticsCard
-                    title="Total Views"
-                    value={formatNumber(stats.totalViews)}
-                    trend="↑ 15% this week"
-                    trendColor="green"
-                    icon={TrendingUp}
-                    color="blue"
-                    className="col-span-2"
-                />
+            {/* Greeting Section */}
+            <div className="space-y-1">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Hello, {user?.first_name || 'Guest'}
+                </h1>
+                <p className="text-sm text-white/50">
+                    Welcome back to your dashboard.
+                </p>
+            </div>
 
+            {/* Analytics Cards Grid */}
+            <div className="grid grid-cols-1 gap-4">
                 <AnalyticsCard
                     title="Active Deals"
                     value={stats.activeDeals}
@@ -87,15 +74,6 @@ export function Home() {
                     trendColor={stats.activeDeals > 0 ? "green" : "neutral"}
                     icon={PieChart}
                     color="purple"
-                />
-
-                <AnalyticsCard
-                    title="Balance"
-                    value={`${Number(stats.balance).toFixed(2)} TON`}
-                    trend="Wallet Balance"
-                    trendColor="neutral"
-                    icon={Wallet}
-                    color="blue"
                 />
             </div>
 

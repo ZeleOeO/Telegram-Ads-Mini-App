@@ -3,11 +3,9 @@ set -e
 
 echo "Deploying Telegram Ad Mini App..."
 
-# Pull latest changes
 echo "Pulling latest code..."
 git pull
 
-# Build and restart containers clearly
 echo "Rebuilding and restarting containers..."
 docker-compose down
 docker-compose up -d --build

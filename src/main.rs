@@ -81,6 +81,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/health", get(handlers::health_check))
         .route("/me", get(handlers::me_handler))
+        .route("/users/wallet", post(handlers::users::update_wallet_address))
         .route("/channels", post(handlers::channels::add_channel_handler))
         .route("/channels", get(handlers::channels::list_channels))
         .route("/channels/my", get(handlers::channels::get_my_channels))
